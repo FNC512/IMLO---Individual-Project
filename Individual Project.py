@@ -21,7 +21,7 @@ test = torchvision.datasets.CIFAR10(
     transform=ToTensor(),
 )
 
-batch_size = 64
+batch_size = 1
 # Create data loaders.
 train_dl = DataLoader(training, batch_size=batch_size)
 test_dl = DataLoader(test, batch_size=batch_size)
@@ -105,17 +105,6 @@ with torch.no_grad():
     predicted, actual = classes[pred[0].argmax(0)], classes[y]
     print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
-# Example of target with class indices
-loss = nn.CrossEntropyLoss()
-input = torch.randn(3, 5, requires_grad=True)
-target = torch.empty(3, dtype=torch.long).random_(5)
-output = loss(input, target)
-output.backward()
-
-# Example of target with class probabilities
-target = torch.randn(3, 5).softmax(dim=1)
->>> output = loss(input, target)
->>> output.backward()
 
 ##torch.save(model.state_dict(), "model.pth")
 ##print("Saved PyTorch Model State to model.pth")
