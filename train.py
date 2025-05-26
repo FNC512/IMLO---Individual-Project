@@ -1,11 +1,11 @@
 import torch
 import torchvision
 import torch.nn.functional as f
+import numpy as np
 from torchvision.transforms import ToTensor
 from torch import nn
-from torch.utils.data import DataLoader
-from datetime import datetime
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.data import DataLoader, SubsetRandomSampler
+
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
@@ -33,21 +33,8 @@ class NeuralNetwork(nn.Module):
         return num_features
 
 
-
-def train(dataloader, model, loss_fn, optimizer, batch_size):
-    size = len(dataloader.dataset)
-    model.train()
-    for batch, (X, y) in enumerate(dataloader):
-        pred = model(X)
-        loss = loss_fn(pred, y)
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-
-
-def train_one_epoch(epoch_index, tb_writer, training_dl, model, loss_fn, optimizer):
+def train_one_epoch(training_dl, model, loss_fn, optimizer):
     running_loss = 0.
-    last_loss = 0.
 
     for i, data in enumerate(training_dl):
         inputs, labels = data
@@ -70,23 +57,22 @@ trainingdata = torchvision.datasets.CIFAR10(
     transform=ToTensor(),
 )
 
-# Getting the CIFAR10  dataset
-testdata = torchvision.datasets.CIFAR10(
-    root='.data',
-    train=False,
-    download=True,
-    transform=ToTensor(),
-)
-
-
 #Hyperparameters
 learning_rate = 1e-2
 batch_size = 64
 epochs = 30
 
-# Create data loaders.
-train_dl = DataLoader(trainingdata, batch_size=batch_size)
-test_dl = DataLoader(testdata, batch_size=batch_size)
+#Get Validation and Training Data
+size = len(trainingdata)
+index = list(range(size))
+np.random.shuffle(index)
+split = int(np.floor(0.2 * size))
+train_i, valid_i = index[split:], index[:split]
+
+train_sampler = SubsetRandomSampler(train_i)
+valid_sampler = SubsetRandomSampler(valid_i)
+train_dl = torch.utils.data.DataLoader(trainingdata, batch_size=batch_size, sampler=train_sampler)
+valid_dl = torch.utils.data.DataLoader(trainingdata, batch_size=batch_size, sampler=valid_sampler)
 
 model = NeuralNetwork()
 print(model)
@@ -104,14 +90,14 @@ for epoch in range(epochs):
 
     # Make sure gradient tracking is on, and do a pass over the data
     model.train(True)
-    avg_loss = train_one_epoch(epoch_number, writer, train_dl, model, loss_fn, optimizer)
+    avg_loss = train_one_epoch(train_dl, model, loss_fn, optimizer)
     running_vloss = 0.0
     correct = 0
     total = 0
     model.eval()
 
     with torch.no_grad():
-        for i, vdata in enumerate(test_dl):
+        for i, vdata in enumerate(valid_dl):
             vinputs, vlabels = vdata
             voutputs = model(vinputs)
             vloss = loss_fn(voutputs, vlabels)
@@ -127,12 +113,5 @@ for epoch in range(epochs):
 
     if avg_vloss < best_vloss:
         best_vloss = avg_vloss
-        #model_path = 'model_{}_{}'.format(timestamp, epoch_number)
         torch.save(model.state_dict(), 'best_model.pth')
-
     epoch_number += 1
-
-#torch.save(model.state_dict(), "model.pth")
-#print("Saved PyTorch Model State to model.pth")
-#model = NeuralNetwork()
-#model.load_state_dict(torch.load("model.pth", weights_only=True))
