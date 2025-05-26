@@ -43,7 +43,8 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     train(train_dl, model, loss_fn, optimizer, batch_size)
-    test(test_dl, model, loss_fn)
+    test_loss = test(test_dl, model, loss_fn)
+    scheduler.step(test_loss)
 print("Done!")
 
 
