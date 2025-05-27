@@ -24,15 +24,13 @@ class NeuralNetwork(nn.Module):
 
     def forward(self, x):
         x = f.max_pool2d(f.relu(self.bn1(self.conv1(x))), (2, 2))
-        x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn2(self.conv2(x))), 2)
-        x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn3(self.conv3(x))), 2)
-        x = self.do2(x)
         x = x.view(-1, self.num_flat_features(x))
         x = f.relu(self.fc1(x))
-        x = self.do2(x)
+        x = self.do1(x)
         x = f.relu(self.fc2(x))
+        x = self.do2(x)
         x = self.fc3(x)
         return x
 
