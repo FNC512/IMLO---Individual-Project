@@ -12,9 +12,9 @@ class NeuralNetwork(nn.Module):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 64, 5)
         self.bn1 = nn.BatchNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 128, 2)
+        self.conv2 = nn.Conv2d(64, 128, 3)
         self.bn2 = nn.BatchNorm2d(128)
-        self.conv3 = nn.Conv2d(128, 256, 2)
+        self.conv3 = nn.Conv2d(128, 256, 3)
         self.bn3 = nn.BatchNorm2d(256)
         self.fc1 = nn.Linear(256 * 2 * 2, 512)
         self.do1 = nn.Dropout(0.3)
@@ -72,7 +72,7 @@ trainingdata = torchvision.datasets.CIFAR10(
 )
 
 #Hyperparameters
-learning_rate = 1e-2
+learning_rate = 0.01
 batch_size = 64
 epochs = 100
 
