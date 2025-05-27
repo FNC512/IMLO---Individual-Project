@@ -5,22 +5,29 @@ import numpy as np
 from torchvision.transforms import ToTensor
 from torch import nn
 from torch.utils.data import DataLoader, SubsetRandomSampler
-
+import datetime as datetime
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 64, 5)
+        self.bn1 = nn.BatchNorm2d(64)
         self.conv2 = nn.Conv2d(64, 128, 5)
+        self.bn2 = nn.BatchNorm2d(128)
         self.fc1 = nn.Linear(128 * 5 * 5, 512)
+        self.do1 = nn.Dropout(0.3)
         self.fc2 = nn.Linear(512, 128)
+        self.do2 = nn.Dropout(0.5)
         self.fc3 = nn.Linear(128, 10)
 
     def forward(self, x):
-        x = f.max_pool2d(f.relu(self.conv1(x)), (2, 2))
-        x = f.max_pool2d(f.relu(self.conv2(x)), 2)
+        x = f.max_pool2d(f.relu(self.bn1(self.conv1(x))), (2, 2))
+        x = self.do1(x)
+        x = f.max_pool2d(f.relu(self.bn2(self.conv2(x))), 2)
+        x = self.do1(x)
         x = x.view(-1, self.num_flat_features(x))
         x = f.relu(self.fc1(x))
+        x = self.do2(x)
         x = f.relu(self.fc2(x))
         x = self.fc3(x)
         return x
@@ -60,7 +67,7 @@ trainingdata = torchvision.datasets.CIFAR10(
 #Hyperparameters
 learning_rate = 1e-2
 batch_size = 64
-epochs = 30
+epochs = 100
 
 #Get Validation and Training Data
 size = len(trainingdata)
@@ -84,6 +91,8 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 epoch_number = 0
 
 best_vloss = 1_000_000.
+
+print(datetime.datetime.now())
 
 for epoch in range(epochs):
     print('EPOCH {}:'.format(epoch_number + 1))
@@ -115,3 +124,5 @@ for epoch in range(epochs):
         best_vloss = avg_vloss
         torch.save(model.state_dict(), 'best_model.pth')
     epoch_number += 1
+
+print(datetime.datetime.now())
