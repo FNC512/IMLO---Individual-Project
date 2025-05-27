@@ -57,7 +57,7 @@ def train_one_epoch(training_dl, model, loss_fn, optimizer):
 
 
 #Adding a transform to normalize to data to optimal values
-transform = transforms.Compose([transfroms.ToTensor(), transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
 
 # Getting the CIFAR10  dataset
 trainingdata = torchvision.datasets.CIFAR10(
