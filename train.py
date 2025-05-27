@@ -2,7 +2,7 @@ import torch
 import torchvision
 import torch.nn.functional as f
 import numpy as np
-from torchvision.transforms import ToTensor
+from torchvision.transforms import transforms
 from torch import nn
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import datetime as datetime
@@ -56,12 +56,15 @@ def train_one_epoch(training_dl, model, loss_fn, optimizer):
     return running_loss / len(training_dl)
 
 
+#Adding a transform to normalize to data to optimal values
+transform = transforms.Compose([transfroms.ToTensor(), transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
+
 # Getting the CIFAR10  dataset
 trainingdata = torchvision.datasets.CIFAR10(
     root='.data',
     train=True,
     download=True,
-    transform=ToTensor(),
+    transform=transform,
 )
 
 #Hyperparameters
