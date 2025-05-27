@@ -14,7 +14,7 @@ class NeuralNetwork(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
         self.conv2 = nn.Conv2d(64, 128, 2)
         self.bn2 = nn.BatchNorm2d(128)
-        self.conv2 = nn.Conv2d(128, 256, 2)
+        self.conv3 = nn.Conv2d(128, 256, 2)
         self.bn3 = nn.BatchNorm2d(256)
         self.fc1 = nn.Linear(256 * 2 * 3, 512)
         self.do1 = nn.Dropout(0.3)
