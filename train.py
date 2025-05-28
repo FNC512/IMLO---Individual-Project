@@ -53,6 +53,8 @@ def train_one_epoch(training_dl, model, loss_fn, optimizer):
     # Make sure gradient tracking is on, and do a pass over the data
     model.train(True)
     running_loss = 0.
+    total = 0
+    correct = 0
 
     for i, data in enumerate(training_dl):
         inputs, labels = data
@@ -63,8 +65,11 @@ def train_one_epoch(training_dl, model, loss_fn, optimizer):
         optimizer.step()
 
         running_loss += loss.item()
-
-    return running_loss / len(training_dl)
+        correct += (outputs.argmax(1) == labels).type(torch.float).sum().item()
+        total += labels.size(0)
+        avg_loss = running_loss / len(training_dl)
+        train_accuracy = correct / total
+    return avg_loss, train_accuracy
 
 
 #Adding a transform to normalize to data to optimal values
@@ -111,10 +116,10 @@ print(datetime.datetime.now())
 for epoch in range(epochs):
     print('EPOCH {}:'.format(epoch_number + 1))
 
-    avg_loss = train_one_epoch(train_dl, model, loss_fn, optimizer)
+    avg_loss, train_accuracy = train_one_epoch(train_dl, model, loss_fn, optimizer)
     running_vloss = 0.0
-    correct = 0
-    total = 0
+    vcorrect = 0
+    vtotal = 0
     model.eval()
 
     with torch.no_grad():
@@ -123,12 +128,12 @@ for epoch in range(epochs):
             voutputs = model(vinputs)
             vloss = loss_fn(voutputs, vlabels)
             running_vloss += vloss
-            correct += (voutputs.argmax(1) == vlabels).type(torch.float).sum().item()
-            total += vlabels.size(0)
+            vcorrect += (voutputs.argmax(1) == vlabels).type(torch.float).sum().item()
+            vtotal += vlabels.size(0)
 
     avg_vloss = running_vloss / (i + 1)
-    accuracy = correct / total
-    print('LOSS train {:.4f} valid {:.4f} | VAL ACCURACY: {:.2f}%'.format(avg_loss, avg_vloss, accuracy * 100))
+    val_accuracy = vcorrect / vtotal
+    print('LOSS train {:.4f} valid {:.4f} | TRAIN ACCURACY: {:2f}% | VAL ACCURACY: {:.2f}%'.format(avg_loss, avg_vloss, val_accuracy * 100, train_accuracy *100))
 
     scheduler.step(avg_vloss)
 
