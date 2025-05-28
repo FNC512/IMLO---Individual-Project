@@ -25,14 +25,16 @@ class NeuralNetwork(nn.Module):
 
     def forward(self, x):
         x = f.max_pool2d(f.relu(self.bn1(self.conv1(x))), (2, 2))
+        x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn2(self.conv2(x))), 2)
         x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn3(self.conv3(x))), 2)
+        x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn3(self.conv4(x))), 2)
         x = self.do1(x)
         x = x.view(-1, self.num_flat_features(x))
         x = f.relu(self.fc1(x))
-        x = self.do1(x)
+        x = self.do2(x)
         x = f.relu(self.fc2(x))
         x = self.do2(x)
         x = self.fc3(x)
@@ -47,6 +49,8 @@ class NeuralNetwork(nn.Module):
 
 
 def train_one_epoch(training_dl, model, loss_fn, optimizer):
+    # Make sure gradient tracking is on, and do a pass over the data
+    model.train(True)
     running_loss = 0.
 
     for i, data in enumerate(training_dl):
@@ -106,8 +110,6 @@ print(datetime.datetime.now())
 for epoch in range(epochs):
     print('EPOCH {}:'.format(epoch_number + 1))
 
-    # Make sure gradient tracking is on, and do a pass over the data
-    model.train(True)
     avg_loss = train_one_epoch(train_dl, model, loss_fn, optimizer)
     running_vloss = 0.0
     correct = 0
