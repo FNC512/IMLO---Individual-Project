@@ -10,13 +10,14 @@ import datetime as datetime
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 64, 5)
+        self.conv1 = nn.Conv2d(3, 64, 5, padding=2)
         self.bn1 = nn.BatchNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 128, 3)
+        self.conv2 = nn.Conv2d(64, 128, 3, padding=1)
         self.bn2 = nn.BatchNorm2d(128)
-        self.conv3 = nn.Conv2d(128, 256, 3)
+        self.conv3 = nn.Conv2d(128, 256, 3, padding=1)
         self.bn3 = nn.BatchNorm2d(256)
         self.fc1 = nn.Linear(256 * 2 * 2, 512)
+        self.conv4 = nn.Conv2d(256, 256, 3, padding=1)
         self.do1 = nn.Dropout(0.3)
         self.fc2 = nn.Linear(512, 128)
         self.do2 = nn.Dropout(0.5)
@@ -25,7 +26,10 @@ class NeuralNetwork(nn.Module):
     def forward(self, x):
         x = f.max_pool2d(f.relu(self.bn1(self.conv1(x))), (2, 2))
         x = f.max_pool2d(f.relu(self.bn2(self.conv2(x))), 2)
+        x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn3(self.conv3(x))), 2)
+        x = f.max_pool2d(f.relu(self.bn3(self.conv4(x))), 2)
+        x = self.do1(x)
         x = x.view(-1, self.num_flat_features(x))
         x = f.relu(self.fc1(x))
         x = self.do1(x)
