@@ -1,42 +1,50 @@
 import torch
 import torchvision
-from torchvision.transforms import ToTensor
+import torchvision.transforms as transforms
 from torch import nn
 from torch.utils.data import DataLoader
 import torch.nn.functional as f
+from train import NeuralNetwork
 
-class NeuralNetwork(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.conv1 = nn.Conv2d(3, 64, 5)
-        self.conv2 = nn.Conv2d(64, 128, 5)
-        self.fc1 = nn.Linear(128 * 5 * 5, 256)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 10)
 
-    def forward(self, x):
-        x = f.max_pool2d(f.relu(self.conv1(x)), (2, 2))
-        x = f.max_pool2d(f.relu(self.conv2(x)), 2)
-        x = x.view(-1, self.num_flat_features(x))
-        x = f.relu(self.fc1(x))
-        x = f.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+#Adding a transform to normalize to data to optimal values
+transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
 
-    def num_flat_features(self, x):
-        size = x.size()[1:]
-        num_features = 1
-        for s in size:
-            num_features *= s
-        return num_features
+
+batch_size = 64
 
 # Getting the CIFAR10  dataset
 testdata = torchvision.datasets.CIFAR10(
     root='.data',
     train=False,
     download=True,
-    transform=ToTensor(),
+    transform=transform,
 )
 
+#test dataloader
 test_dl = DataLoader(testdata, batch_size=batch_size)
+
+model = NeuralNetwork()
+model.load_state_dict(torch.load('best_model.pth'))
+model.eval()
+
+loss_fn = nn.CrossEntropyLoss()
+
+correct = 0
+total = 0
+running_loss = 0.0
+
+with torch.no_grad():
+    for i, data in enumerate(test_dl):
+        inputs, labels = data
+        outputs = NeuralNetwork.model(inputs)
+        loss = loss_fn(outputs, labels)
+        running_loss += loss.item()
+        correct += (outputs.argmax(1) == labels).type(torch.float).sum().item()
+        total += labels.size(0)
+
+avg_loss = running_loss / len(test_dl)
+test_accuracy = correct / total
+
+print('LOSS TEST {:.4f} | TEST ACCURACY: {:2f}%'.format(avg_loss, test_accuracy *100))
 
