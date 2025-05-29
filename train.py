@@ -108,7 +108,7 @@ model = NeuralNetwork()
 print(model)
 
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=1e-5)
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
 epoch_number = 0
