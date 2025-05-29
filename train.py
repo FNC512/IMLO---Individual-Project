@@ -90,7 +90,7 @@ trainingdata = torchvision.datasets.CIFAR10(
 #Hyperparameters
 learning_rate = 0.01
 batch_size = 64
-epochs = 120
+epochs = 110
 
 #Get Validation and Training Data
 size = len(trainingdata)
