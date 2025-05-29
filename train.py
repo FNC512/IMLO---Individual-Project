@@ -90,7 +90,7 @@ trainingdata = torchvision.datasets.CIFAR10(
 #Hyperparameters
 learning_rate = 0.01
 batch_size = 64
-epochs = 100
+epochs = 120
 
 #Get Validation and Training Data
 size = len(trainingdata)
@@ -108,7 +108,7 @@ model = NeuralNetwork()
 print(model)
 
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=1e-4)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
 epoch_number = 0
