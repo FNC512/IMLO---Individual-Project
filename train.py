@@ -108,7 +108,7 @@ model = NeuralNetwork()
 print(model)
 
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate, weight_decay=1e-5)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=5)
 
 epoch_number = 0
@@ -137,7 +137,7 @@ for epoch in range(epochs):
 
     avg_vloss = running_vloss / (i + 1)
     val_accuracy = vcorrect / vtotal
-    print('LOSS train {:.4f} valid {:.4f} | TRAIN ACCURACY: {:2f}% | VAL ACCURACY: {:.2f}%'.format(avg_loss, avg_vloss, val_accuracy * 100, train_accuracy *100))
+    print('LOSS train {:.4f} valid {:.4f} | TRAIN ACCURACY: {:2f}% | VAL ACCURACY: {:.2f}%'.format(avg_loss, avg_vloss, train_accuracy *100, val_accuracy * 100))
 
     scheduler.step(avg_vloss)
 
