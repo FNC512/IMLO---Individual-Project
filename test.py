@@ -3,7 +3,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torch import nn
 from torch.utils.data import DataLoader
-import torch.nn.functional as f
 from train import NeuralNetwork
 
 
@@ -24,20 +23,21 @@ testdata = torchvision.datasets.CIFAR10(
 #test dataloader
 test_dl = DataLoader(testdata, batch_size=batch_size)
 
+#Loading the best model
 model = NeuralNetwork()
 model.load_state_dict(torch.load('best_model.pth'))
 model.eval()
 
 loss_fn = nn.CrossEntropyLoss()
-
 correct = 0
 total = 0
 running_loss = 0.0
 
+#Evaluating
 with torch.no_grad():
     for i, data in enumerate(test_dl):
         inputs, labels = data
-        outputs = NeuralNetwork.model(inputs)
+        outputs = model(inputs)
         loss = loss_fn(outputs, labels)
         running_loss += loss.item()
         correct += (outputs.argmax(1) == labels).type(torch.float).sum().item()
