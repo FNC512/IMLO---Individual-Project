@@ -7,9 +7,11 @@ from torch import nn
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import datetime as datetime
 
+#Establishing NeuralNetwork Achitecture
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
+        #Adding Covolutional Layers with corresponding batch normalisation
         self.conv1 = nn.Conv2d(3, 32, 5, padding=2)
         self.bn1 = nn.BatchNorm2d(32)
         self.conv2 = nn.Conv2d(32, 64, 3, padding=1)
@@ -20,6 +22,7 @@ class NeuralNetwork(nn.Module):
         self.bn4 = nn.BatchNorm2d(256)
         self.conv5 = nn.Conv2d(256, 512, 3, padding=1)
         self.bn5 = nn.BatchNorm2d(512)
+        #Adding fully connected layers and dropout
         self.fc1 = nn.Linear(512 * 1 * 1, 512)
         self.fc2 = nn.Linear(512, 128)
         self.fc3 = nn.Linear(128, 10)
@@ -27,7 +30,9 @@ class NeuralNetwork(nn.Module):
         self.do2 = nn.Dropout(0.5)
 
     def forward(self, x):
+        #Applying batch normalisation, activation function and max pooling on the output of each convolutional layer
         x = f.max_pool2d(f.relu(self.bn1(self.conv1(x))), (2, 2))
+        #Applying dropout to each output
         x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn2(self.conv2(x))), 2)
         x = self.do1(x)
@@ -37,6 +42,8 @@ class NeuralNetwork(nn.Module):
         x = self.do1(x)
         x = f.max_pool2d(f.relu(self.bn5(self.conv5(x))), 2)
         x = self.do1(x)
+        
+        #Flattening the data then passing it through each fully connected layer, with dropout layers between
         x = x.view(-1, self.num_flat_features(x))
         x = f.relu(self.fc1(x))
         x = self.do2(x)
@@ -46,6 +53,7 @@ class NeuralNetwork(nn.Module):
         return x
 
     def num_flat_features(self, x):
+        #Counting the number of features post flattening
         size = x.size()[1:]
         num_features = 1
         for s in size:
@@ -54,7 +62,7 @@ class NeuralNetwork(nn.Module):
 
 
 def train_one_epoch(training_dl, model, loss_fn, optimizer):
-    # Make sure gradient tracking is on, and do a pass over the data
+    #Training the model for a single epoch
     model.train(True)
     running_loss = 0.
     total = 0
@@ -101,8 +109,11 @@ train_i, valid_i = index[split:], index[:split]
 
 train_sampler = SubsetRandomSampler(train_i)
 valid_sampler = SubsetRandomSampler(valid_i)
+
 train_dl = torch.utils.data.DataLoader(trainingdata, batch_size=batch_size, sampler=train_sampler)
 valid_dl = torch.utils.data.DataLoader(trainingdata, batch_size=batch_size, sampler=valid_sampler)
+
+
 
 model = NeuralNetwork()
 print(model)
@@ -117,15 +128,20 @@ best_vloss = 1_000_000.
 
 print(datetime.datetime.now())
 
+#Training
 for epoch in range(epochs):
     print('EPOCH {}:'.format(epoch_number + 1))
 
+    #Runnning a single training epoch
     avg_loss, train_accuracy = train_one_epoch(train_dl, model, loss_fn, optimizer)
+    
+    #Initialising values for validation
     running_vloss = 0.0
     vcorrect = 0
     vtotal = 0
     model.eval()
 
+    #Evaluationg the model on validation data set
     with torch.no_grad():
         for i, vdata in enumerate(valid_dl):
             vinputs, vlabels = vdata
@@ -139,11 +155,15 @@ for epoch in range(epochs):
     val_accuracy = vcorrect / vtotal
     print('LOSS train {:.4f} valid {:.4f} | TRAIN ACCURACY: {:2f}% | VAL ACCURACY: {:.2f}%'.format(avg_loss, avg_vloss, train_accuracy *100, val_accuracy * 100))
 
+    #Stepping the scheduler
     scheduler.step(avg_vloss)
 
+
+    #Saving the best model
     if avg_vloss < best_vloss:
         best_vloss = avg_vloss
         torch.save(model.state_dict(), 'best_model.pth')
     epoch_number += 1
 
+#Printing the time to time the model
 print(datetime.datetime.now())
